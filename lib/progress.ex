@@ -45,7 +45,7 @@ defmodule Progress do
   end
 
   defp process_loop(pid, offset_x, i, progress) do
-    :timer.sleep(:random.uniform(200))
+    :timer.sleep(:random.uniform(200+i*20))
     send(pid, {:command,
       move_up(i)
       <> set_x(offset_x+progress)
