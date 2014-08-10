@@ -35,7 +35,12 @@ defmodule Progress do
     printing_loop(count)
   end
 
-  defp process_loop(pid, _, _, @progress) do
+  defp process_loop(pid, offset_x, i, @progress) do
+    send(pid, {:command,
+      move_up(i)
+      <> set_x(offset_x)
+      <> String.duplicate("=", @progress)
+    })
     send(pid, :finished)
   end
 
