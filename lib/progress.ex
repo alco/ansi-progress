@@ -10,6 +10,8 @@ defmodule Progress do
     IO.puts :stderr, "Usage: ./progress N"
   end
 
+  @progress 40
+
   defp spawn_processes(count) do
     max_len = Enum.reduce(1..count, 0, fn i, len ->
       str = "Process \##{i}"
@@ -20,7 +22,7 @@ defmodule Progress do
 
     IO.write move_up(count)
     Enum.each(1..count, fn _ ->
-      IO.write set_x(offset_x) <> "[                    ]"
+      IO.write set_x(offset_x) <> "[" <> String.duplicate(" ", @progress) <> "]"
       IO.write move_down(1)
     end)
 
@@ -33,13 +35,19 @@ defmodule Progress do
     printing_loop(count)
   end
 
-  defp process_loop(pid, _, _, 20) do
+  defp process_loop(pid, _, _, @progress) do
     send(pid, :finished)
   end
 
   defp process_loop(pid, offset_x, i, progress) do
-    :timer.sleep(:random.uniform(300))
-    send(pid, {:command, move_up(i) <> set_x(offset_x+progress) <> "."})
+    :timer.sleep(:random.uniform(200))
+    send(pid, {:command,
+      move_up(i)
+      <> set_x(offset_x+progress)
+      <> "."
+      <> set_x(offset_x+@progress+2)
+      <> clear_rest_of_the_line
+      <> "#{Float.round(progress/(@progress-1)*100, 2)}%"})
     process_loop(pid, offset_x, i, progress+1)
   end
 
@@ -67,6 +75,10 @@ defmodule Progress do
 
   defp set_x(n) do
     "\e[#{n}G"
+  end
+
+  defp clear_rest_of_the_line do
+    "\e[K"
   end
 
   defp exec_cmd(cmd) do
